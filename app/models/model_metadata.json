@@ -1,0 +1,16 @@
+{
+  "training_samples": 1000,
+  "validation_samples": 200,
+  "samples_per_class": 500,
+  "training_accuracy": 1.0,
+  "validation_accuracy": 0.8,
+  "n_estimators": 100,
+  "max_depth": 20,
+  "classes": [
+    "defect",
+    "good"
+  ],
+  "feature_dim": 256,
+  "timestamp": "2026-01-28T12:14:08.790297",
+  "mode": "quick_training"
+}

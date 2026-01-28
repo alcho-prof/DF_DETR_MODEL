@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RF-DETR Defect Detection System | Quality Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #004999;
+            --primary-light: #3388dd;
+            --success: #0f8a5f;
+            --success-light: #e6f4ed;
+            --danger: #c62828;
+            --danger-light: #fdeaea;
+            --warning: #e65100;
+            --warning-light: #fff3e0;
+            --bg-body: #f5f7fa;
+            --bg-card: #ffffff;
+            --bg-sidebar: #1a2332;
+            --text-primary: #1a2332;
+            --text-secondary: #5a6778;
+            --text-muted: #8a96a8;
+            --text-inverse: #ffffff;
+            --border: #e1e5eb;
+            --border-dark: #c8ced6;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-body);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-sidebar);
+            color: var(--text-inverse);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .logo-text {
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .logo-subtitle {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 0.125rem;
+        }
+
+        /* Navigation */
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-label {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 0.75rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 0.75rem;
+            border-radius: var(--radius-sm);
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-item svg {
+            width: 18px;
+            height: 18px;
+            opacity: 0.8;
+        }
+
+        /* Status indicator */
+        .status-card {
+            margin-top: auto;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-md);
+        }
+
+        .status-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8125rem;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .status-indicator.offline {
+            background: var(--danger);
+        }
+
+        .status-indicator.warning {
+            background: var(--warning);
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem;
+        }
+
+        /* Page header */
+        .page-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .page-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Content grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 1200px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        /* Tabs */
+        .tab-group {
+            display: flex;
+            gap: 0.25rem;
+            padding: 0.25rem;
+            background: var(--bg-body);
+            border-radius: var(--radius-md);
+            margin-bottom: 1.25rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.625rem 1rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background: var(--bg-card);
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Media container */
+        .media-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/10;
+            background: #f8f9fb;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .media-container video,
+        .media-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .media-placeholder {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+        }
+
+        .media-placeholder svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+            opacity: 0.4;
+        }
+
+        .media-placeholder p {
+            font-size: 0.875rem;
+        }
+
+        /* Upload zone */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-md);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: var(--primary);
+            background: rgba(0, 102, 204, 0.03);
+        }
+
+        .upload-zone input {
+            display: none;
+        }
+
+        .upload-zone svg {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        .upload-zone p {
+            margin-bottom: 0.25rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .upload-zone .hint {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.75rem 1.25rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-body);
+            border-color: var(--border-dark);
+        }
+
+        /* Result panel */
+        .result-banner {
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .result-banner.success {
+            background: var(--success-light);
+            border: 1px solid rgba(15, 138, 95, 0.2);
+        }
+
+        .result-banner.danger {
+            background: var(--danger-light);
+            border: 1px solid rgba(198, 40, 40, 0.2);
+        }
+
+        .result-banner.pending {
+            background: var(--bg-body);
+            border: 1px solid var(--border);
+        }
+
+        .result-label {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .result-banner.success .result-label {
+            color: var(--success);
+        }
+
+        .result-banner.danger .result-label {
+            color: var(--danger);
+        }
+
+        .result-subtitle {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        /* Progress bar */
+        .progress-group {
+            margin-bottom: 1rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.8125rem;
+        }
+
+        .progress-header .label {
+            color: var(--text-secondary);
+        }
+
+        .progress-header .value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--bg-body);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.high {
+            background: var(--success);
+        }
+
+        .progress-fill.medium {
+            background: var(--warning);
+        }
+
+        .progress-fill.low {
+            background: var(--danger);
+        }
+
+        /* Details list */
+        .details-list {
+            list-style: none;
+        }
+
+        .details-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8125rem;
+        }
+
+        .details-item:last-child {
+            border-bottom: none;
+        }
+
+        .details-key {
+            color: var(--text-secondary);
+        }
+
+        .details-value {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.625rem;
+            border-radius: 100px;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .badge-success {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .badge-neutral {
+            background: var(--bg-body);
+            color: var(--text-secondary);
+        }
+
+        /* Alert box */
+        .alert {
+            padding: 0.875rem 1rem;
+            border-radius: var(--radius-md);
+            margin-top: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            font-size: 0.8125rem;
+        }
+
+        .alert svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .alert-warning {
+            background: var(--warning-light);
+            border: 1px solid rgba(230, 81, 0, 0.2);
+            color: var(--warning);
+        }
+
+        .alert-info {
+            background: rgba(0, 102, 204, 0.05);
+            border: 1px solid rgba(0, 102, 204, 0.15);
+            color: var(--primary);
+        }
+
+        /* Recommendations */
+        .recommendations {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-body);
+            border-radius: var(--radius-md);
+        }
+
+        .recommendations-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .recommendations ul {
+            list-style: none;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        .recommendations li {
+            padding: 0.375rem 0;
+            padding-left: 1rem;
+            position: relative;
+        }
+
+        .recommendations li::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0.75rem;
+            width: 4px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            z-index: 10;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* History */
+        .history-list {
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.5rem;
+            background: var(--bg-body);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .history-item:hover {
+            background: var(--border);
+        }
+
+        .history-thumb {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+            border: 1px solid var(--border);
+        }
+
+        .history-info {
+            flex: 1;
+        }
+
+        .history-result {
+            font-weight: 600;
+            font-size: 0.8125rem;
+        }
+
+        .history-result.success {
+            color: var(--success);
+        }
+
+        .history-result.danger {
+            color: var(--danger);
+        }
+
+        .history-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.8125rem;
+        }
+
+        /* Captured preview */
+        .preview-section {
+            margin-top: 1.25rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .preview-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="logo-text">RF-DETR</div>
+                    <div class="logo-subtitle">Defect Detection</div>
+                </div>
+            </div>
+
+            <nav class="nav-section">
+                <div class="nav-label">Analysis</div>
+                <a class="nav-item active" href="#">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <path d="M21 15l-5-5L5 21" />
+                    </svg>
+                    Image Analysis
+                </a>
+                <a class="nav-item" href="/docs" target="_blank">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <path d="M14 2v6h6" />
+                        <path d="M16 13H8" />
+                        <path d="M16 17H8" />
+                        <path d="M10 9H8" />
+                    </svg>
+                    API Documentation
+                </a>
+                <a class="nav-item" href="/model-info" target="_blank">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 16v-4" />
+                        <path d="M12 8h.01" />
+                    </svg>
+                    Model Information
+                </a>
+            </nav>
+
+            <div class="status-card">
+                <div class="status-row">
+                    <span class="status-indicator" id="statusIndicator"></span>
+                    <span id="statusText">Connecting...</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="page-header">
+                <h1 class="page-title">Quality Control Analysis</h1>
+                <p class="page-description">Upload or capture an image to analyze for manufacturing defects</p>
+            </header>
+
+            <div class="content-grid">
+                <!-- Input Section -->
+                <section class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Image Input</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Tabs -->
+                        <div class="tab-group">
+                            <button class="tab-btn active" data-mode="camera" onclick="switchMode('camera')">
+                                Live Camera
+                            </button>
+                            <button class="tab-btn" data-mode="upload" onclick="switchMode('upload')">
+                                Upload File
+                            </button>
+                        </div>
+
+                        <!-- Camera Mode -->
+                        <div id="cameraMode" class="mode-content">
+                            <div class="media-container" id="videoContainer">
+                                <video id="videoElement" autoplay playsinline style="display: none;"></video>
+                                <canvas id="captureCanvas" style="display: none;"></canvas>
+                                <div class="media-placeholder" id="cameraPlaceholder">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M23 7l-7 5 7 5V7z" />
+                                        <rect x="1" y="5" width="15" height="14" rx="2" />
+                                    </svg>
+                                    <p>Click "Start Camera" to begin capture</p>
+                                </div>
+                                <div class="loading-overlay" id="cameraLoading" style="display: none;">
+                                    <div class="spinner"></div>
+                                    <p class="loading-text">Initializing camera...</p>
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-secondary" id="startCameraBtn" onclick="startCamera()">
+                                    Start Camera
+                                </button>
+                                <button class="btn btn-primary" id="captureBtn" onclick="captureImage()" disabled>
+                                    Capture and Analyze
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Upload Mode -->
+                        <div id="uploadMode" class="mode-content" style="display: none;">
+                            <div class="upload-zone" id="uploadZone"
+                                onclick="document.getElementById('fileInput').click()">
+                                <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                    <polyline points="17,8 12,3 7,8" />
+                                    <line x1="12" y1="3" x2="12" y2="15" />
+                                </svg>
+                                <p><strong>Click to upload</strong> or drag and drop</p>
+                                <p class="hint">PNG, JPG, JPEG up to 10MB</p>
+                            </div>
+                            <div class="media-container" id="uploadPreview" style="display: none;">
+                                <img id="uploadedImage" src="" alt="Uploaded image">
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-secondary" onclick="clearUpload()">
+                                    Clear
+                                </button>
+                                <button class="btn btn-primary" id="analyzeUploadBtn" onclick="analyzeUploadedImage()"
+                                    disabled>
+                                    Analyze Image
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Captured Preview -->
+                        <div id="capturedPreview" class="preview-section" style="display: none;">
+                            <div class="preview-label">Analyzed Image</div>
+                            <div class="media-container">
+                                <img id="capturedImage" src="" alt="Captured image">
+                                <div class="loading-overlay" id="analyzeLoading" style="display: none;">
+                                    <div class="spinner"></div>
+                                    <p class="loading-text">Analyzing image...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Results Section -->
+                <aside>
+                    <!-- Main Result -->
+                    <div class="card" style="margin-bottom: 1rem;">
+                        <div class="card-header">
+                            <h2 class="card-title">Analysis Result</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="result-banner pending" id="resultBanner">
+                                <div class="result-label" id="resultLabel">Awaiting Input</div>
+                                <p class="result-subtitle" id="resultSubtext">
+                                    Capture or upload an image to begin analysis
+                                </p>
+                            </div>
+
+                            <!-- Confidence -->
+                            <div class="progress-group" id="confidenceGroup" style="display: none;">
+                                <div class="progress-header">
+                                    <span class="label">Confidence Score</span>
+                                    <span class="value" id="confidenceValue">0%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill high" id="confidenceFill" style="width: 0%;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Details -->
+                            <ul class="details-list" id="detailsList" style="display: none;">
+                                <li class="details-item">
+                                    <span class="details-key">Detected Object</span>
+                                    <span class="details-value" id="objectName">-</span>
+                                </li>
+                                <li class="details-item">
+                                    <span class="details-key">Severity Level</span>
+                                    <span class="details-value">
+                                        <span class="badge badge-neutral" id="severityBadge">-</span>
+                                    </span>
+                                </li>
+                                <li class="details-item">
+                                    <span class="details-key">Uncertainty (Entropy)</span>
+                                    <span class="details-value" id="entropyValue">-</span>
+                                </li>
+                                <li class="details-item">
+                                    <span class="details-key">Prediction Margin</span>
+                                    <span class="details-value" id="marginValue">-</span>
+                                </li>
+                            </ul>
+
+                            <!-- Anomaly Alert -->
+                            <div class="alert alert-warning" id="anomalyAlert" style="display: none;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path
+                                        d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                                    <line x1="12" y1="9" x2="12" y2="13" />
+                                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                                </svg>
+                                <div>
+                                    <strong>Anomaly Detected</strong>
+                                    <p id="anomalyReason"></p>
+                                </div>
+                            </div>
+
+                            <!-- Recommendations -->
+                            <div class="recommendations" id="recommendations" style="display: none;">
+                                <div class="recommendations-title">Recommended Actions</div>
+                                <ul id="recommendationsList"></ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Recent Analyses</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="history-list" id="historyList">
+                                <div class="empty-state">No analysis history yet</div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = window.location.origin;
+
+        // State
+        let stream = null;
+        let currentMode = 'camera';
+        let uploadedFile = null;
+        let history = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkServerStatus();
+            setupDragDrop();
+        });
+
+        // Check server status
+        async function checkServerStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+
+                const indicator = document.getElementById('statusIndicator');
+                const text = document.getElementById('statusText');
+
+                if (data.model_loaded) {
+                    indicator.className = 'status-indicator';
+                    text.textContent = 'System Ready';
+                } else {
+                    indicator.className = 'status-indicator warning';
+                    text.textContent = 'Model Not Loaded';
+                }
+            } catch (error) {
+                document.getElementById('statusIndicator').className = 'status-indicator offline';
+                document.getElementById('statusText').textContent = 'Server Offline';
+            }
+        }
+
+        // Switch modes
+        function switchMode(mode) {
+            currentMode = mode;
+
+            document.querySelectorAll('.tab-btn').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.mode === mode);
+            });
+
+            document.getElementById('cameraMode').style.display = mode === 'camera' ? 'block' : 'none';
+            document.getElementById('uploadMode').style.display = mode === 'upload' ? 'block' : 'none';
+
+            if (mode !== 'camera' && stream) {
+                stopCamera();
+            }
+        }
+
+        // Camera functions
+        async function startCamera() {
+            const loading = document.getElementById('cameraLoading');
+            const placeholder = document.getElementById('cameraPlaceholder');
+            const video = document.getElementById('videoElement');
+            const startBtn = document.getElementById('startCameraBtn');
+            const captureBtn = document.getElementById('captureBtn');
+
+            loading.style.display = 'flex';
+            placeholder.style.display = 'none';
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+                });
+
+                video.srcObject = stream;
+                video.style.display = 'block';
+                loading.style.display = 'none';
+
+                startBtn.textContent = 'Stop Camera';
+                startBtn.onclick = stopCamera;
+                captureBtn.disabled = false;
+            } catch (error) {
+                loading.style.display = 'none';
+                placeholder.style.display = 'block';
+                placeholder.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="15" y1="9" x2="9" y2="15"/>
+                        <line x1="9" y1="9" x2="15" y2="15"/>
+                    </svg>
+                    <p>Camera access denied or unavailable</p>
+                `;
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+
+            const video = document.getElementById('videoElement');
+            const placeholder = document.getElementById('cameraPlaceholder');
+            const startBtn = document.getElementById('startCameraBtn');
+            const captureBtn = document.getElementById('captureBtn');
+
+            video.srcObject = null;
+            video.style.display = 'none';
+            placeholder.style.display = 'block';
+            placeholder.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M23 7l-7 5 7 5V7z"/>
+                    <rect x="1" y="5" width="15" height="14" rx="2"/>
+                </svg>
+                <p>Click "Start Camera" to begin capture</p>
+            `;
+
+            startBtn.textContent = 'Start Camera';
+            startBtn.onclick = startCamera;
+            captureBtn.disabled = true;
+        }
+
+        async function captureImage() {
+            const video = document.getElementById('videoElement');
+            const canvas = document.getElementById('captureCanvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+
+            const capturedPreview = document.getElementById('capturedPreview');
+            const capturedImage = document.getElementById('capturedImage');
+            capturedImage.src = canvas.toDataURL('image/jpeg', 0.9);
+            capturedPreview.style.display = 'block';
+
+            canvas.toBlob(async (blob) => {
+                await analyzeImage(blob);
+            }, 'image/jpeg', 0.9);
+        }
+
+        // Upload functions
+        function setupDragDrop() {
+            const uploadZone = document.getElementById('uploadZone');
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadZone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); });
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadZone.addEventListener(eventName, () => uploadZone.classList.add('dragover'));
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadZone.addEventListener(eventName, () => uploadZone.classList.remove('dragover'));
+            });
+
+            uploadZone.addEventListener('drop', (e) => {
+                if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+            });
+        }
+
+        function handleFileSelect(event) {
+            if (event.target.files[0]) handleFile(event.target.files[0]);
+        }
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+
+            uploadedFile = file;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('uploadedImage').src = e.target.result;
+                document.getElementById('uploadZone').style.display = 'none';
+                document.getElementById('uploadPreview').style.display = 'block';
+                document.getElementById('analyzeUploadBtn').disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearUpload() {
+            uploadedFile = null;
+            document.getElementById('uploadZone').style.display = 'block';
+            document.getElementById('uploadPreview').style.display = 'none';
+            document.getElementById('analyzeUploadBtn').disabled = true;
+            document.getElementById('fileInput').value = '';
+        }
+
+        async function analyzeUploadedImage() {
+            if (!uploadedFile) return;
+
+            const capturedPreview = document.getElementById('capturedPreview');
+            const capturedImage = document.getElementById('capturedImage');
+            capturedImage.src = document.getElementById('uploadedImage').src;
+            capturedPreview.style.display = 'block';
+
+            await analyzeImage(uploadedFile);
+        }
+
+        // Analysis
+        async function analyzeImage(imageData) {
+            const loading = document.getElementById('analyzeLoading');
+            loading.style.display = 'flex';
+
+            resetResults();
+
+            try {
+                const formData = new FormData();
+                formData.append('file', imageData, 'image.jpg');
+
+                const response = await fetch(`${API_BASE}/predict?detailed=true`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+                const result = await response.json();
+                displayResult(result);
+                addToHistory(result, imageData);
+
+            } catch (error) {
+                displayError(error.message);
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function resetResults() {
+            const banner = document.getElementById('resultBanner');
+            banner.className = 'result-banner pending';
+            document.getElementById('resultLabel').textContent = 'Analyzing...';
+            document.getElementById('resultSubtext').textContent = 'Please wait while we process the image';
+
+            document.getElementById('confidenceGroup').style.display = 'none';
+            document.getElementById('detailsList').style.display = 'none';
+            document.getElementById('anomalyAlert').style.display = 'none';
+            document.getElementById('recommendations').style.display = 'none';
+        }
+
+        function displayResult(result) {
+            const banner = document.getElementById('resultBanner');
+            const isDefect = result.prediction_label === 'Defected';
+
+            banner.className = `result-banner ${isDefect ? 'danger' : 'success'}`;
+            document.getElementById('resultLabel').textContent = result.prediction_label;
+            document.getElementById('resultSubtext').textContent = `Detected: ${result.object_name || 'Unknown object'}`;
+
+            // Confidence
+            const confidence = (result.confidence || 0) * 100;
+            document.getElementById('confidenceGroup').style.display = 'block';
+            document.getElementById('confidenceValue').textContent = `${confidence.toFixed(1)}%`;
+
+            const fill = document.getElementById('confidenceFill');
+            fill.style.width = `${confidence}%`;
+            fill.className = `progress-fill ${confidence >= 80 ? 'high' : confidence >= 50 ? 'medium' : 'low'}`;
+
+            // Details
+            document.getElementById('detailsList').style.display = 'block';
+            document.getElementById('objectName').textContent = result.object_name || '-';
+
+            const severity = result.defect_severity || 'none';
+            const badge = document.getElementById('severityBadge');
+            badge.textContent = severity.toUpperCase();
+            badge.className = `badge ${severity === 'none' ? 'badge-success' : severity === 'minor' ? 'badge-neutral' : severity === 'moderate' ? 'badge-warning' : 'badge-danger'}`;
+
+            document.getElementById('entropyValue').textContent = result.normalized_entropy?.toFixed(3) || '-';
+            document.getElementById('marginValue').textContent = result.prediction_margin?.toFixed(3) || '-';
+
+            // Anomaly
+            if (result.is_anomaly) {
+                document.getElementById('anomalyAlert').style.display = 'flex';
+                document.getElementById('anomalyReason').textContent = result.anomaly_reason || 'Unusual pattern detected';
+            }
+
+            // Recommendations
+            if (result.recommendations && result.recommendations.length > 0) {
+                document.getElementById('recommendations').style.display = 'block';
+                document.getElementById('recommendationsList').innerHTML = result.recommendations.map(r => `<li>${r}</li>`).join('');
+            }
+        }
+
+        function displayError(message) {
+            const banner = document.getElementById('resultBanner');
+            banner.className = 'result-banner pending';
+            document.getElementById('resultLabel').textContent = 'Analysis Failed';
+            document.getElementById('resultLabel').style.color = 'var(--danger)';
+            document.getElementById('resultSubtext').textContent = message;
+        }
+
+        function addToHistory(result, imageData) {
+            const historyList = document.getElementById('historyList');
+
+            if (history.length === 0) {
+                historyList.innerHTML = '';
+            }
+
+            let thumbSrc = imageData instanceof Blob ? URL.createObjectURL(imageData) : document.getElementById('capturedImage').src;
+
+            const isDefect = result.prediction_label === 'Defected';
+            const time = new Date().toLocaleTimeString();
+
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.innerHTML = `
+                <img src="${thumbSrc}" class="history-thumb" alt="Analysis">
+                <div class="history-info">
+                    <div class="history-result ${isDefect ? 'danger' : 'success'}">${result.prediction_label}</div>
+                    <div class="history-time">${time} - ${result.object_name || 'Unknown'}</div>
+                </div>
+            `;
+
+            historyList.insertBefore(item, historyList.firstChild);
+
+            while (historyList.children.length > 10) {
+                historyList.removeChild(historyList.lastChild);
+            }
+
+            history.unshift({ result, thumbSrc, time });
+        }
+    </script>
+</body>
+
+</html>
