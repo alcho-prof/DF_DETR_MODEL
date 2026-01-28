@@ -158,48 +158,48 @@ Image (3 × H × W)
 ┌─────────────────────────────────────────────┐
 │           ResNet-50 Backbone                │
 │                                             │
-│  Conv1 → BN → ReLU → MaxPool               │
+│  Conv1 → BN → ReLU → MaxPool                │
 │      │                                      │
 │      ▼                                      │
-│  Layer1 (64 → 256 channels)                │
+│  Layer1 (64 → 256 channels)                 │
 │      │                                      │
 │      ▼                                      │
-│  Layer2 (256 → 512 channels)               │
+│  Layer2 (256 → 512 channels)                │
 │      │                                      │
 │      ▼                                      │
-│  Layer3 (512 → 1024 channels)              │
+│  Layer3 (512 → 1024 channels)               │
 │      │                                      │
 │      ▼                                      │
-│  Layer4 (1024 → 2048 channels)             │
+│  Layer4 (1024 → 2048 channels)              │
 │                                             │
-│  Output: Feature Map (2048 × H/32 × W/32)  │
+│  Output: Feature Map (2048 × H/32 × W/32)   │
 └────────────────────┬────────────────────────┘
                      │
                      ▼
 ┌─────────────────────────────────────────────┐
 │         Transformer Encoder                 │
 │                                             │
-│  × 6 Encoder Layers:                       │
-│    • Multi-Head Self-Attention             │
-│    • Feed-Forward Network                  │
-│    • Layer Normalization                   │
-│    • Residual Connections                  │
+│  × 6 Encoder Layers:                        │
+│    • Multi-Head Self-Attention              │
+│    • Feed-Forward Network                   │
+│    • Layer Normalization                    │
+│    • Residual Connections                   │
 │                                             │
-│  Output: Encoded Features (HW × 256)       │
+│  Output: Encoded Features (HW × 256)        │
 └────────────────────┬────────────────────────┘
                      │
                      ▼
 ┌─────────────────────────────────────────────┐
 │         Transformer Decoder                 │
 │                                             │
-│  Object Queries: 100 learnable embeddings  │
+│  Object Queries: 100 learnable embeddings   │
 │                                             │
-│  × 6 Decoder Layers:                       │
-│    • Self-Attention over queries           │
-│    • Cross-Attention to encoder output     │
-│    • Feed-Forward Network                  │
+│  × 6 Decoder Layers:                        │
+│    • Self-Attention over queries            │
+│    • Cross-Attention to encoder output      │
+│    • Feed-Forward Network                   │
 │                                             │
-│  Output: Object Embeddings (100 × 256)     │
+│  Output: Object Embeddings (100 × 256)      │
 └────────────────────┬────────────────────────┘
                      │
                      ▼
